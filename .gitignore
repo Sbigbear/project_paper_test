@@ -1,0 +1,22 @@
+# --- Secrets: ห้ามขึ้น git เด็ดขาด ---
+.env
+*.env
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Streamlit ---
+.streamlit/secrets.toml
