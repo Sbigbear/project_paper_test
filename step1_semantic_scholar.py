@@ -5,24 +5,6 @@
     pip install requests python-dotenv
     python step1_semantic_scholar.py
 
-เรื่อง API key (ไม่บังคับ แต่แนะนำอย่างยิ่ง):
-    - ไปสมัครฟรีที่ https://www.semanticscholar.org/product/api
-      (กรอกฟอร์มสั้นๆ แล้วรอรับ key ทางอีเมล)
-    - มี key -> ได้โควตาส่วนตัวประมาณ 1 request/วินาที ไม่ต้องแย่งคิวกับคนทั้งโลก
-    - ไม่มี key -> ยังใช้งานได้ แต่ใช้โควตารวมร่วมกับทุกคนที่ไม่มี key
-
-    วิธีตั้งค่า (ใช้ไฟล์ .env — ไม่ต้องพิมพ์ environment variable ใหม่
-    ทุกครั้งที่เปิด terminal):
-        1. คัดลอกไฟล์ .env.example เป็น .env
-        2. เปิดไฟล์ .env แล้วใส่ key จริงแทนข้อความตัวอย่าง
-        3. ไฟล์ .env จะถูก .gitignore กันไว้ไม่ให้หลุดขึ้น git อัตโนมัติ
-
-⚠️ กฎเหล็ก: ห้าม hardcode API key จริงเป็นค่า default ในโค้ดแบบนี้เด็ดขาด
-    API_KEY = os.environ.get("...", "s2k-xxxxx")   <- ห้ามทำแบบนี้!
-ต่อให้ตั้งใจว่า "เดี๋ยวลบทีหลัง" ก็มีความเสี่ยงที่จะลืมแล้ว commit หลุดไป
-ให้ค่า default เป็น "" เสมอ แล้วใช้ .env หรือ environment variable
-เก็บ key จริงแทน
-"""
 
 import os
 import requests
