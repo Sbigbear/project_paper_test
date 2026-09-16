@@ -2,24 +2,21 @@
 ชิ้นที่ 4: สร้าง Web UI ด้วย Streamlit สำหรับระบบค้นหาและประเมินงานวิจัย
 
 วิธีติดตั้งคลังไลบรารีที่จำเป็น:
-    pip install streamlit requests python-dotenv
+    pip install streamlit requests
 
 วิธีรันแอปพลิเคชัน:
     streamlit run step4_app.py
 
 หมายเหตุ: หน้านี้เหลือช่องกรอกแค่ช่องเดียว (ภาษาอังกฤษ) — ใช้ข้อความ
 เดียวกันทั้งค้นหา paper จาก Semantic Scholar และส่งให้ Gemini ประเมิน
-ความเกี่ยวข้อง (เดิมมี 2 ช่อง: หัวข้อภาษาไทย + คำค้นภาษาอังกฤษ)
+ความเกี่ยวข้อง 
+
 """
 
-import os
 import json
 import time
 import requests
 import streamlit as st
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # ==========================================
 # 1. การตั้งค่าหน้า Streamlit (Page Configuration)
@@ -171,20 +168,25 @@ def evaluate_relevance(user_query: str, abstract: str, gemini_api_key: str, _ret
 with st.sidebar:
     st.header("⚙️ ตั้งค่า API Keys")
 
-    # อ่านค่าเริ่มต้นจาก Environment Variables / .env (ถ้ามี)
-    default_gemini_key = os.environ.get("GEMINI_API_KEY", "")
-    default_s2_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "")
-
+    # ⚠️ สำคัญ: ห้ามดึงค่า default มาจาก environment variable / secrets
+    # ของเจ้าของแอปมาใส่ในช่องนี้เด็ดขาด เพราะ type="password" แค่ซ่อน
+    # ตัวอักษรด้วยจุดๆ เท่านั้น ไม่ได้เข้ารหัสอะไร ถ้ามีค่า default อยู่
+    # ใครก็ตามที่เปิดแอปนี้ (โดยเฉพาะถ้า deploy ขึ้น Streamlit Cloud
+    # เป็น public link) จะกดไอคอนรูปตา (👁) ข้างช่องแล้วเห็น key จริง
+    # ของเจ้าของแอปได้ทันที
+    #
+    # ผู้ใช้แต่ละคนต้องกรอก key ของตัวเองทุกครั้งที่เข้ามาใช้งาน
     input_gemini_key = st.text_input(
         "Gemini API Key (จำเป็น)",
-        value=default_gemini_key,
+        value="",
         type="password",
-        help="ขอ Key ฟรีได้ที่ https://aistudio.google.com/"
+        help="ขอ Key ฟรีได้ที่ https://aistudio.google.com/ "
+             "(key ของคุณจะไม่ถูกบันทึกไว้ที่ไหน ใช้แค่ตอนกดค้นหาเท่านั้น)"
     )
 
     input_s2_key = st.text_input(
         "Semantic Scholar Key (ไม่บังคับ)",
-        value=default_s2_key,
+        value="",
         type="password",
         help="ถ้าใส่จะช่วยเพิ่มอัตราการดึงข้อมูลและไม่ติด Rate Limit"
     )
@@ -218,7 +220,7 @@ with col2:
     paper_limit = st.slider(
         "📊 จำนวนบทความที่ต้องการ:",
         min_value=1,
-        max_value=20,
+        max_value=10,
         value=5
     )
 

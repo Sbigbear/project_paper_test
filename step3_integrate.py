@@ -5,15 +5,6 @@
     pip install requests python-dotenv
     python step3_integrate.py
 
-การตั้งค่า API Keys (ใช้ไฟล์ .env แทนการพิมพ์ environment variable
-ทุกครั้งที่เปิด terminal ใหม่):
-    1. คัดลอกไฟล์ .env.example เป็น .env
-    2. ใส่ key จริงลงในไฟล์ .env
-    3. ไฟล์ .env ถูก .gitignore กันไว้ไม่ให้หลุดขึ้น git แล้ว
-
-⚠️ กฎเหล็ก: ห้าม hardcode API key จริงเป็นค่า default ในโค้ดแบบนี้เด็ดขาด
-    GEMINI_API_KEY = os.environ.get("...", "AQ.xxxxx")   <- ห้ามทำแบบนี้!
-ให้ค่า default เป็น "" เสมอ แล้วเก็บ key จริงไว้ใน .env เท่านั้น
 """
 
 import os
