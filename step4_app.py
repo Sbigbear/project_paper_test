@@ -4,16 +4,16 @@
 วิธีติดตั้งคลังไลบรารีที่จำเป็น:
     pip install streamlit requests
 
-วิธีรันแอปพลิเคชัน:
-    streamlit run step4_app.py
-
-หมายเหตุ: หน้านี้เหลือช่องกรอกแค่ช่องเดียว (ภาษาอังกฤษ) — ใช้ข้อความ
-เดียวกันทั้งค้นหา paper จาก Semantic Scholar และส่งให้ Gemini ประเมิน
-ความเกี่ยวข้อง 
+วิธีรันแอปพลิเคชัน (ทดสอบในเครื่อง):
+    1. สร้างไฟล์ .streamlit/secrets.toml ในโฟลเดอร์โปรเจกต์ (ถ้ายังไม่มี)
+       ใส่เนื้อหาแบบนี้ (ดูเทมเพลตในไฟล์ secrets.toml.example ที่แนบมา):
+           GEMINI_API_KEY = "AIzaSy..."
+           SEMANTIC_SCHOLAR_API_KEY = "s2k-..."   
+    2. streamlit run step4_app.py
 """
 
-import json
 import time
+import json
 import requests
 import streamlit as st
 
@@ -33,9 +33,17 @@ GEMINI_ENDPOINT = (
     f"{MODEL_NAME}:generateContent"
 )
 
+# ==========================================
+# 2. อ่าน API key จาก st.secrets เท่านั้น (ไม่มี UI ให้กรอก/แสดง)
+# ==========================================
+# .get(...) ปลอดภัยกว่า st.secrets["..."] ตรงๆ เพราะถ้ายังไม่ได้ตั้งค่า
+# จะได้ค่าว่างแทนที่จะทำให้แอป crash ทั้งหน้า
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
+SEMANTIC_SCHOLAR_API_KEY = st.secrets.get("SEMANTIC_SCHOLAR_API_KEY", "")
+
 
 # ==========================================
-# 2. ฟังก์ชันหลัก (Backend Core Functions)
+# 3. ฟังก์ชันหลัก (Backend Core Functions)
 # ==========================================
 def search_papers(query: str, limit: int = 5, api_key: str = "", _retry_count: int = 0):
     """
@@ -160,41 +168,31 @@ def evaluate_relevance(user_query: str, abstract: str, gemini_api_key: str, _ret
 
 
 # ==========================================
-# 3. ส่วนแสดงผล UI ด้วย Streamlit
+# 4. ส่วนแสดงผล UI ด้วย Streamlit
 # ==========================================
 
-# --- Sidebar: ตั้งค่า API Keys ---
+# --- Sidebar: แสดงสถานะเฉยๆ ไม่มีช่องกรอก/ไม่มีปุ่มดู key ใดๆ ทั้งสิ้น ---
 with st.sidebar:
-    st.header("⚙️ ตั้งค่า API Keys")
-
-    # ⚠️ สำคัญ: ห้ามดึงค่า default มาจาก environment variable / secrets
-    # ของเจ้าของแอปมาใส่ในช่องนี้เด็ดขาด เพราะ type="password" แค่ซ่อน
-    # ตัวอักษรด้วยจุดๆ เท่านั้น ไม่ได้เข้ารหัสอะไร ถ้ามีค่า default อยู่
-    # ใครก็ตามที่เปิดแอปนี้ (โดยเฉพาะถ้า deploy ขึ้น Streamlit Cloud
-    # เป็น public link) จะกดไอคอนรูปตา (👁) ข้างช่องแล้วเห็น key จริง
-    # ของเจ้าของแอปได้ทันที
-    #
-    # ผู้ใช้แต่ละคนต้องกรอก key ของตัวเองทุกครั้งที่เข้ามาใช้งาน
-    input_gemini_key = st.text_input(
-        "Gemini API Key (จำเป็น)",
-        value="",
-        type="password",
-        help="ขอ Key ฟรีได้ที่ https://aistudio.google.com/ "
-             "(key ของคุณจะไม่ถูกบันทึกไว้ที่ไหน ใช้แค่ตอนกดค้นหาเท่านั้น)"
+    st.header("ℹ️ เกี่ยวกับระบบนี้")
+    st.markdown(
+        "ระบบนี้ตั้งค่า API key ไว้ฝั่งเซิร์ฟเวอร์เรียบร้อยแล้ว "
+        "ไม่ต้องกรอกอะไรเพิ่ม ใช้งานได้เลย"
     )
-
-    input_s2_key = st.text_input(
-        "Semantic Scholar Key (ไม่บังคับ)",
-        value="",
-        type="password",
-        help="ถ้าใส่จะช่วยเพิ่มอัตราการดึงข้อมูลและไม่ติด Rate Limit"
-    )
-
     st.markdown("---")
-    st.markdown("### 📌 คำแนะนำใช้งาน")
-    st.markdown("1. กรอก **Gemini API Key** ให้เรียบร้อย")
-    st.markdown("2. พิมพ์หัวข้อ/ความสนใจเป็นประโยคภาษาอังกฤษ")
-    st.markdown("3. ระบบจะคัดสรรบทความและประเมินคะแนนให้อัตโนมัติ")
+    st.markdown("### 📌 วิธีใช้งาน")
+    st.markdown("1. พิมพ์หัวข้อ/ความสนใจเป็นประโยคภาษาอังกฤษ")
+    st.markdown("2. เลือกจำนวนบทความที่ต้องการ")
+    st.markdown("3. กดค้นหา ระบบจะคัดสรรบทความและประเมินคะแนนให้อัตโนมัติ")
+
+# --- แจ้งเตือนเฉพาะเจ้าของแอป กรณีลืมตั้งค่า Secrets ---
+# (ข้อความนี้ไม่มีการโชว์ key ใดๆ แค่บอกว่ายังไม่ได้ตั้งค่าเท่านั้น)
+if not GEMINI_API_KEY:
+    st.error(
+        "⚠️ ระบบยังไม่ได้ตั้งค่า Gemini API Key ฝั่งเซิร์ฟเวอร์ "
+        "(สำหรับเจ้าของแอป: ไปที่ Streamlit Cloud → Settings → Secrets "
+        "แล้วเพิ่ม GEMINI_API_KEY จากนั้นรอแอป reboot)"
+    )
+    st.stop()  # หยุดการทำงานส่วนที่เหลือของหน้า เพราะไม่มี key ใช้งานต่อไม่ได้
 
 
 # --- Main Page: ส่วนควบคุมและรับอินพุต ---
@@ -228,18 +226,19 @@ search_button = st.button("🚀 ค้นหาและประเมินง
 
 # --- ส่วนประมวลผลเมื่อกดปุ่มค้นหา ---
 if search_button:
-    # ตรวจสอบ API Key
-    if not input_gemini_key:
-        st.warning("⚠️ กรุณากรอก **Gemini API Key** ในแถบ Sidebar ด้านซ้ายก่อนเริ่มค้นหา")
-    elif not search_keyword.strip():
+    if not search_keyword.strip():
         st.warning("⚠️ กรุณากรอกหัวข้อ/ความสนใจของคุณก่อน")
     else:
         # ใช้ search_keyword ตัวเดียวกันทั้งดึง paper และประเมินความเกี่ยวข้อง
         user_query = search_keyword
 
-        # 1. ขั้นตอนดึงข้อมูล Paper
+        # 1. ขั้นตอนดึงข้อมูล Paper (ใช้ key จาก st.secrets โดยตรง)
         with st.spinner(f"กำลังค้นหา Paper จาก Semantic Scholar ด้วยคำค้น '{search_keyword}'..."):
-            papers = search_papers(query=search_keyword, limit=paper_limit, api_key=input_s2_key)
+            papers = search_papers(
+                query=search_keyword,
+                limit=paper_limit,
+                api_key=SEMANTIC_SCHOLAR_API_KEY,
+            )
 
         if not papers:
             st.error("❌ ไม่พบบทความวิจัยที่ตรงกับคำค้น หรือเกิดข้อผิดพลาดในการดึงข้อมูล")
@@ -259,7 +258,7 @@ if search_button:
                 eval_res = evaluate_relevance(
                     user_query=user_query,
                     abstract=paper["abstract"],
-                    gemini_api_key=input_gemini_key
+                    gemini_api_key=GEMINI_API_KEY,
                 )
 
                 paper["score"] = eval_res["score"] if eval_res["score"] is not None else -1
